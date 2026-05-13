@@ -1,6 +1,12 @@
 from django.db import models
-from events.models import Event
-
+from events.models.event import Event
+from events.validators.ticket_type_validators import(
+    validate_price,
+    validate_seats,
+    validate_event_published,
+    validate_unique_ticket_type_per_event
+)
+from django.core.exceptions import ValidationError
 
 class TicketType(models.Model):
 
@@ -17,6 +23,21 @@ class TicketType(models.Model):
     event           = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='ticket_types')
     created_at      = models.DateTimeField(auto_now_add=True)
     updated_at      = models.DateTimeField(auto_now=True)
+
+    def clean(self):
+        if self.pk:
+            raise ValidationError('TicketType cannot be updated')
+        validate_seats(self.total_seats, self.available_seats)
+        validate_price(self.name, self.price)
+        validate_event_published(self.event)
+        validate_unique_ticket_type_per_event(self.event, self.name)
+
+    def save(self, *args, **kwargs):
+        if self.name == 'free':
+            self.price = 0 
+        self.full_clean()
+        super().save(*args, **kwargs)
+
 
     def __str__(self):
         return f"{self.event.name} - {self.name}"
