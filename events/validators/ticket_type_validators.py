@@ -6,8 +6,8 @@ def validate_seats(total_seats, available_seats):
     if available_seats > total_seats:
         raise ValidationError("Available seats can't be more than total seats")
     
-    if total_seats == 0 :
-        raise ValidationError("Total seats can't be Zero!")
+    if total_seats < 1 :
+        raise ValidationError("Total seats must be at least 1")
 
 
 def validate_event_published(event):

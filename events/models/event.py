@@ -2,10 +2,10 @@ from django.db import models
 
 from events.models.category import Category
 from users.models import User
+from django.core.validators import MinValueValidator
 
 from events.validators.event_validators import(
     validate_end_date_after_start,
-    validate_name_length,
     validate_status_flow,
     validate_start_date_in_future,
     validate_start_date_on_publish,
@@ -22,7 +22,7 @@ class Event(models.Model):
         PUBLISHED = 'published', 'Published'
         CANCELLED = 'cancelled', 'Cancelled'
 
-    name          = models.CharField(max_length=100, validators=[validate_name_length])
+    name          = models.CharField(max_length=100, validators=[MinValueValidator(3)])
     description   = models.TextField(null=True, blank=True)
     location_type = models.CharField(max_length=10, choices=LOCATION_TYPES.choices,)
     location_link = models.URLField()

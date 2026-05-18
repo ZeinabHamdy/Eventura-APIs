@@ -2,10 +2,6 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 
-def validate_name_length(value):
-    if len(value) < 3:
-        raise ValidationError('Event name must be at least 3 characters')
-
 
 def validate_end_date_after_start(start_date, end_date):
     if end_date <= start_date:

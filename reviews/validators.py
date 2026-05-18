@@ -28,4 +28,4 @@ def validate_confirmed_booking(user, event):
 
 def validate_published_event(event):
     if event.status != 'published':
-        raise ValidationError("No event found")
+        raise ValidationError("Can't review unpublished event")
