@@ -25,16 +25,12 @@ class TicketType(models.Model):
     updated_at      = models.DateTimeField(auto_now=True)
 
     def clean(self):
-        if self.pk:
-            raise ValidationError('TicketType cannot be updated')
         validate_seats(self.total_seats, self.available_seats)
         validate_price(self.name, self.price)
         validate_event_published(self.event)
-        validate_unique_ticket_type_per_event(self.event, self.name)
+        validate_unique_ticket_type_per_event(self.event, self.name, self.pk)
 
     def save(self, *args, **kwargs):
-        if self.name == 'free':
-            self.price = 0 
         self.full_clean()
         super().save(*args, **kwargs)
 

@@ -23,7 +23,10 @@ def validate_price(name, price):
         raise ValidationError("Price must be positive")
 
 
-def validate_unique_ticket_type_per_event(event, name):
+def validate_unique_ticket_type_per_event(event, name, pk=None):
     from events.models.ticket_type import TicketType
-    if TicketType.objects.filter(event=event, name=name).exists():
+    qs = TicketType.objects.filter(event=event, name=name)
+    if pk:
+        qs = qs.exclude(pk=pk)
+    if qs.exists():
         raise ValidationError(f'Event already has a {name} ticket type')

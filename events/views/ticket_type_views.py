@@ -1,0 +1,67 @@
+from rest_framework.permissions import IsAuthenticated
+from users.permissions import IsOrganizer
+from rest_framework import viewsets
+from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework.exceptions import ValidationError as DRFValidationError
+
+
+
+from events.models.ticket_type import TicketType
+from events.serializers.ticket_type_serializer import(
+    TicketTypeCreateSerializer,
+    TicketTypeReadSerializer,
+    TicketTypeUpdateSerializer,
+    TicketTypeUpdateWithBookingSerializer,
+)
+
+
+
+class TicketTypeViewSet(viewsets.ModelViewSet):
+    queryset = TicketType.objects.all()
+    
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsOrganizer()]
+        return [IsAuthenticated()]
+
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return TicketTypeCreateSerializer
+        if self.action in ['update', 'partial_update']:
+            instance = self.get_object()
+            if instance.bookings.exists():
+                return TicketTypeUpdateWithBookingSerializer
+            return TicketTypeUpdateSerializer
+        return TicketTypeReadSerializer
+    
+
+    def perform_create(self, serializer):
+        try:
+            total_seats = serializer.validated_data['total_seats']
+            serializer.save(available_seats=total_seats)
+        except DjangoValidationError as e:
+            raise DRFValidationError(e.message_dict)
+
+
+    def perform_update(self, serializer):
+        try:
+            instance = serializer.instance 
+            if instance.bookings.exists():
+                new_total = serializer.validated_data.get('total_seats', instance.total_seats)
+                booked = instance.total_seats - instance.available_seats 
+                if booked > new_total:
+                    raise DRFValidationError(f'Cannot set total seats to {new_total}, already {booked} seats booked.')
+                serializer.save(available_seats=new_total - booked)
+            else :
+                total_seats = serializer.validated_data.get('total_seats', instance.total_seats)
+                serializer.save(available_seats=total_seats)
+
+        except DjangoValidationError as e:
+            raise DRFValidationError(e.message_dict)
+
+
+    def perform_destroy(self, instance):
+        if instance.bookings.exists():
+            raise DRFValidationError('Cannot delete a ticket type that has bookings.')
+        instance.delete()

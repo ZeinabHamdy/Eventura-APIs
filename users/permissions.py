@@ -8,8 +8,11 @@ class IsAdminUser(BasePermission):
 
 class IsOrganizer(BasePermission): # for this event
     def has_object_permission(self, request, view, obj):
-        return obj.organizer == request.user
-
+        if hasattr(obj, 'organizer'):
+            return obj.organizer == request.user
+        if hasattr(obj, 'event'):
+            return obj.event.organizer == request.user
+        return False
 
 class IsOwnerOrAdmin(BasePermission):
     def has_object_permission(self, request, view, obj):
