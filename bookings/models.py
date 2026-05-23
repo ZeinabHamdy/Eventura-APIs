@@ -1,37 +1,57 @@
 from django.db import models
+from django.db.models import Q
 
-from events.models.ticket_type import TicketType
-from users.models import User
-from bookings.validators import (
-    validate_not_published,
-    validate_not_organizer,
-    validate_start_date,
-    validate_no_existing_booking,
-)
 
 class Booking(models.Model):
 
-    class BOOKING_STATUS(models.TextChoices):
+    class STATUS(models.TextChoices):
         CONFIRMED = 'confirmed', 'Confirmed'
         CANCELLED = 'cancelled', 'Cancelled'
-        WAIT_LIST = 'wait_list', 'Wait List'
 
+    user        = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='bookings')
+    ticket_type = models.ForeignKey('events.TicketType', on_delete=models.CASCADE, related_name='bookings')
+    status      = models.CharField(max_length=15, choices=STATUS.choices, default=STATUS.CONFIRMED)
     booked_at   = models.DateTimeField(auto_now_add=True)
-    status      = models.CharField(max_length=15, choices=BOOKING_STATUS.choices)
-    user        = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings')
-    ticket_type = models.ForeignKey(TicketType, on_delete=models.CASCADE, related_name='bookings' )
-    #qr_code   = 
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'ticket_type'],
+                condition=Q(status='confirmed'),
+                name='unique_confirmed_booking_per_user_per_ticket_type'
+            )
+        ]
 
     def clean(self):
-        validate_start_date(self.ticket_type.event.start_date)
-        validate_not_organizer(self)
-        validate_not_published(self.ticket_type.event.status)
-        validate_no_existing_booking(self)
+        from bookings.validators import validate_booking_status_flow
+        if self.pk:
+            validate_booking_status_flow(self)
 
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f'Booking of {self.user.username} of event {self.ticket_type.event.name}'
+        return f'Booking of {self.user.email} for event {self.ticket_type.event.name}'
+
+
+class WaitlistEntry(models.Model):
+
+    user        = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='waitlist_entries')
+    ticket_type = models.ForeignKey('events.TicketType', on_delete=models.CASCADE, related_name='waitlist_entries')
+    position    = models.PositiveIntegerField()
+    joined_at   = models.DateTimeField(auto_now_add=True)
+    is_active   = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'ticket_type'],
+                condition=Q(is_active=True),
+                name='unique_active_waitlist_per_user_per_ticket_type'
+            )
+        ]
+        ordering = ['position']
+
+    def __str__(self):
+        return f'{self.user.email} → waitlist #{self.position} for {self.ticket_type.event.name}'
