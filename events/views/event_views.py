@@ -11,6 +11,7 @@ from rest_framework.exceptions import ValidationError as DRFValidationError
 
 from events.models.event import Event
 from users.permissions import IsOrganizer
+from utils.mixins import PaginatedActionMixin
 from events.serializers.event_serializer import (
     EventListSerializer,
     EventRetrieveSerializer,
@@ -20,7 +21,7 @@ from events.serializers.event_serializer import (
 )
 
 
-class EventViewSet(viewsets.ModelViewSet):
+class EventViewSet(PaginatedActionMixin, viewsets.ModelViewSet):
     queryset = Event.objects.all()
     permission_classes = [IsAuthenticated]
 
@@ -87,6 +88,7 @@ class EventViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     
+
     @action(detail=False, methods=['get'], url_path='organizer/(?P<organizer_pk>[^/.]+)')
     def organizer_events(self, request, organizer_pk=None):
         from users.models import User
@@ -107,4 +109,4 @@ class EventViewSet(viewsets.ModelViewSet):
             status='published'
         )
 
-        return Response(EventListSerializer(events, many=True).data)
+        return self.paginated_response(events, EventListSerializer)

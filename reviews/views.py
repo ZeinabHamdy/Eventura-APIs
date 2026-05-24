@@ -12,9 +12,10 @@ from reviews.serializers import(
     UpdateReviewSerializer,
 )
 from reviews.models import Review
+from utils.mixins import PaginatedActionMixin
 
 
-class ReviewViewSet(viewsets.ModelViewSet):
+class ReviewViewSet(PaginatedActionMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
 
@@ -42,4 +43,4 @@ class ReviewViewSet(viewsets.ModelViewSet):
         except Event.DoesNotExist:
             return Response({'detail': 'Event not found.'}, status=status.HTTP_404_NOT_FOUND)
         reviews = Review.objects.filter(event=event)
-        return Response(ListReviewSerializer(reviews, many=True).data)
+        return self.paginated_response(reviews, ListReviewSerializer)

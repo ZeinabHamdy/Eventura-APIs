@@ -10,11 +10,11 @@ from bookings.models import Booking, WaitlistEntry
 from bookings.serializers import BookingReadSerializer, BookingCreateSerializer, WaitlistReadSerializer
 from bookings.services import create_booking_or_join_waitlist, cancel_booking
 from users.permissions import IsOwnerOrAdmin
+from utils.mixins import PaginatedActionMixin
 
 
 
-
-class BookingViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class BookingViewSet(PaginatedActionMixin, mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -74,8 +74,7 @@ class BookingViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.Retr
             ticket_type__event=event,
             status=Booking.STATUS.CONFIRMED
         )
-
-        return Response(BookingReadSerializer(bookings, many=True).data)
+        return self.paginated_response(bookings, BookingReadSerializer)
 
 
     @action(detail=True, methods=['post'], permission_classes=[IsOwnerOrAdmin])
@@ -100,7 +99,7 @@ class BookingViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.Retr
 
 
 
-class WaitlistViewSet(mixins.ListModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class WaitlistViewSet(PaginatedActionMixin,mixins.ListModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = WaitlistReadSerializer
 
@@ -137,4 +136,4 @@ class WaitlistViewSet(mixins.ListModelMixin, mixins.DestroyModelMixin, viewsets.
             is_active=True
         ).order_by('position')
 
-        return Response(WaitlistReadSerializer(waitlist, many=True).data)
+        return self.paginated_response(waitlist, WaitlistReadSerializer)
