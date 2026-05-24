@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db import models
+from django.db.models import Avg, Count
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.exceptions import ValidationError as DRFValidationError
 
@@ -25,7 +26,10 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Event.objects.filter(  # Q for OR operation
+        return Event.objects.annotate(
+            average_rating=Avg('reviews__rating'),
+            review_count=Count('reviews')
+        ).filter(
             models.Q(status='published') |
             models.Q(status='cancelled') |
             models.Q(status='drafted', organizer=user)
@@ -81,3 +85,26 @@ class EventViewSet(viewsets.ModelViewSet):
                 raise DRFValidationError(e.message_dict)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    
+    @action(detail=False, methods=['get'], url_path='organizer/(?P<organizer_pk>[^/.]+)')
+    def organizer_events(self, request, organizer_pk=None):
+        from users.models import User
+
+        try:
+            organizer = User.objects.get(pk=organizer_pk)
+        except User.DoesNotExist:
+            return Response(
+                {'detail': 'Organizer not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        events = Event.objects.annotate(
+            average_rating=Avg('reviews__rating'),
+            review_count=Count('reviews')
+        ).filter(
+            organizer=organizer,
+            status='published'
+        )
+
+        return Response(EventListSerializer(events, many=True).data)

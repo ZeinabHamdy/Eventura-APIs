@@ -35,13 +35,17 @@ class EventUpdateStatusSerializer(serializers.ModelSerializer):
 
 class EventListSerializer(serializers.ModelSerializer):
     category = serializers.StringRelatedField()
+    average_rating = serializers.DecimalField(max_digits=3, decimal_places=2, read_only=True)
+    review_count   = serializers.IntegerField(read_only=True)
     class Meta:
         model = Event
-        fields = ['name', 'start_date', 'location_type', 'status', 'category']
+        fields = ['name', 'start_date', 'location_type', 'status', 'category', 'average_rating', 'review_count']
 
 class EventRetrieveSerializer(serializers.ModelSerializer):
     organizer = UserProfileSerializer(read_only=True)
     category = serializers.StringRelatedField()
+    average_rating = serializers.DecimalField(max_digits=3, decimal_places=2, read_only=True)
+    review_count   = serializers.IntegerField(read_only=True)
     class Meta:
         model = Event
         fields = '__all__'
