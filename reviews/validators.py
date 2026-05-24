@@ -3,14 +3,14 @@ from django.utils import timezone
 
 
 
-def validate_not_organizer(review):
-    if review.user == review.event.organizer:
+def validate_not_organizer(user, event):
+    if user == event.organizer:
         raise ValidationError("Organizer can't review his event")
 
 
-def validate_after_end_date(end_date):
-    if timezone.now() < end_date:
-        raise ValidationError("Can't review event before its end")
+def validate_after_end_date(event):
+    if timezone.now() < event.end_date:
+        raise ValidationError("Can't review event before it ends")
 
 
 def validate_no_existing_review(user, event):
@@ -25,6 +25,7 @@ def validate_confirmed_booking(user, event):
     
     if not Booking.objects.filter(user=user, ticket_type__event=event, status='confirmed').exists():
         raise ValidationError("You must have a confirmed booking to review this event")
+
 
 def validate_published_event(event):
     if event.status != 'published':
