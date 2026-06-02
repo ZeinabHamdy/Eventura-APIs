@@ -20,10 +20,11 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
+    'django_filters',
 
 
 
-    # apps
+    # added apps
     'events',
     'bookings',
     'users',
@@ -103,11 +104,13 @@ STATIC_URL = 'static/'
 
 
 AUTH_USER_MODEL = 'users.User'
+
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
     'OPTIONS': {'min_length': 8}},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=6), 
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),   
@@ -119,6 +122,7 @@ SIMPLE_JWT = {
 }
 
 REST_FRAMEWORK = {
+    # authentication 
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
@@ -128,5 +132,12 @@ REST_FRAMEWORK = {
 
     # pagination 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
+    'PAGE_SIZE': 10,
+
+    # filters
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
 }

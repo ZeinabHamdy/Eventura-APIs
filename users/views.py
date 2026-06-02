@@ -3,9 +3,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.filters import SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
+
 
 from .models import User
 from .permissions import IsAdminUser
+from utils.mixins import PaginatedActionMixin
 from .serializers import (
     UserRegisterSerializer,
     UserProfileSerializer,
@@ -81,10 +85,15 @@ class UserViewSet(viewsets.ViewSet):
         )
 
 
-class AdminViewSet(viewsets.ViewSet):
+class AdminViewSet(PaginatedActionMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated, IsAdminUser]
+    filter_backends    = [DjangoFilterBackend, SearchFilter]
+    filterset_fields   = ['is_superuser', 'is_active']
+    search_fields      = ['name', 'email']
+    serializer_class   = AdminUserSerializer
 
     @action(detail=False, methods=['get'])
     def users(self, request):
-        serializer = AdminUserSerializer(User.objects.all(), many=True)
-        return Response(serializer.data)
+        queryset = User.objects.all()
+        queryset = self.filter_queryset(queryset)
+        return self.paginated_response(queryset, AdminUserSerializer)

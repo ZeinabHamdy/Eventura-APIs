@@ -4,6 +4,7 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework.filters import OrderingFilter
 
 
 from reviews.serializers import(
@@ -18,6 +19,10 @@ from utils.mixins import PaginatedActionMixin
 class ReviewViewSet(PaginatedActionMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
+    filter_backends = [OrderingFilter]
+    ordering_fields  = ['rating','created_at']
+    ordering         = ['-rating']
+
 
     def get_queryset(self):
         return Review.objects.filter(user=self.request.user)
@@ -43,4 +48,5 @@ class ReviewViewSet(PaginatedActionMixin, viewsets.ModelViewSet):
         except Event.DoesNotExist:
             return Response({'detail': 'Event not found.'}, status=status.HTTP_404_NOT_FOUND)
         reviews = Review.objects.filter(event=event)
+        reviews = self.filter_queryset(reviews)
         return self.paginated_response(reviews, ListReviewSerializer)

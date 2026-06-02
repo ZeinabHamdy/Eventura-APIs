@@ -1,10 +1,11 @@
-from django.db import transaction
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.filters import OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 from bookings.models import Booking, WaitlistEntry
 from bookings.serializers import BookingReadSerializer, BookingCreateSerializer, WaitlistReadSerializer
@@ -16,6 +17,10 @@ from utils.mixins import PaginatedActionMixin
 
 class BookingViewSet(PaginatedActionMixin, mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
+    filter_backends  = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = ['status']
+    ordering_fields  = ['booked_at']
+    ordering         = ['-booked_at']
 
     def get_queryset(self):
         user = self.request.user
@@ -74,6 +79,7 @@ class BookingViewSet(PaginatedActionMixin, mixins.CreateModelMixin, mixins.ListM
             ticket_type__event=event,
             status=Booking.STATUS.CONFIRMED
         )
+        bookings = OrderingFilter().filter_queryset(request, bookings, self)
         return self.paginated_response(bookings, BookingReadSerializer)
 
 

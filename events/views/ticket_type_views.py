@@ -3,9 +3,12 @@ from users.permissions import IsOrganizer
 from rest_framework import viewsets
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.exceptions import ValidationError as DRFValidationError
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter
 
 
 
+from events.filters import TicketTypeFilter
 from events.models.ticket_type import TicketType
 from events.serializers.ticket_type_serializer import(
     TicketTypeCreateSerializer,
@@ -18,6 +21,9 @@ from events.serializers.ticket_type_serializer import(
 
 class TicketTypeViewSet(viewsets.ModelViewSet):
     queryset = TicketType.objects.all()
+    filter_backends  = [DjangoFilterBackend, OrderingFilter]
+    filterset_class  = TicketTypeFilter
+    ordering_fields  = ['price', 'available_seats']
     
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:

@@ -7,7 +7,7 @@ from users.validators import (
 
 
 class User(AbstractUser):
-    name         = models.CharField(max_length=50)
+    name         = models.CharField(max_length=50, null=True, blank=True)
     email        = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=13, unique=True, validators=[validate_phone_number], null=True, blank=True)
     first_name   = None 

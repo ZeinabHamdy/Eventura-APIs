@@ -1,14 +1,18 @@
-from rest_framework import status, viewsets
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.decorators import action
 from django.db import models
 from django.db.models import Avg, Count
+from django_filters.rest_framework import DjangoFilterBackend
 from django.core.exceptions import ValidationError as DjangoValidationError
+
+from rest_framework import status, viewsets
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.exceptions import ValidationError as DRFValidationError
 
 
 
+from events.filters import EventFilter
 from events.models.event import Event
 from users.permissions import IsOrganizer
 from utils.mixins import PaginatedActionMixin
@@ -24,6 +28,12 @@ from events.serializers.event_serializer import (
 class EventViewSet(PaginatedActionMixin, viewsets.ModelViewSet):
     queryset = Event.objects.all()
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class  = EventFilter
+    search_fields    = ['name', 'description']
+    ordering_fields  = ['start_date']
+    ordering         = ['-start_date']
+    
 
     def get_queryset(self):
         user = self.request.user
@@ -108,5 +118,5 @@ class EventViewSet(PaginatedActionMixin, viewsets.ModelViewSet):
             organizer=organizer,
             status='published'
         )
-
+        events = self.filter_queryset(events)
         return self.paginated_response(events, EventListSerializer)
