@@ -73,7 +73,7 @@ class EventViewSet(PaginatedActionMixin, viewsets.ModelViewSet):
             raise DRFValidationError(e.message_dict)
 
     def perform_update(self, serializer):
-        if serializer.instance.status == 'cancelled':
+        if serializer.instance.status == 'cancelled': # type: ignore
             raise DRFValidationError('Cannot update a cancelled event.')
         try:
             serializer.save()

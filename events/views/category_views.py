@@ -7,11 +7,11 @@ from events.models.category import Category
 from events.serializers.category_serializer import CategorySerializer
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
-    filter_backends = [SearchFilter]
-    search_fields   = ['name']
+    queryset = Category.objects.all().order_by('id')
     serializer_class = CategorySerializer
     http_method_names=['get', 'post', 'delete']
+    filter_backends = [SearchFilter]
+    search_fields   = ['name']
 
     def get_permissions(self):
         if self.action in ['create', 'destroy']:

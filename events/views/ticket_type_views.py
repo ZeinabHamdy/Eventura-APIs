@@ -53,7 +53,7 @@ class TicketTypeViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         try:
             instance = serializer.instance 
-            if instance.bookings.exists():
+            if instance.bookings.exists(): # type: ignore
                 new_total = serializer.validated_data.get('total_seats', instance.total_seats)
                 booked = instance.total_seats - instance.available_seats 
                 if booked > new_total:
