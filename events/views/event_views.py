@@ -73,7 +73,7 @@ class EventViewSet(PaginatedActionMixin, viewsets.ModelViewSet):
             raise DRFValidationError(e.message_dict)
 
     def perform_update(self, serializer):
-        if serializer.instance.status == 'cancelled': # type: ignore
+        if serializer.instance.status == 'cancelled': 
             raise DRFValidationError('Cannot update a cancelled event.')
         try:
             serializer.save()
@@ -81,7 +81,8 @@ class EventViewSet(PaginatedActionMixin, viewsets.ModelViewSet):
             raise DRFValidationError(e.message_dict)
     
     def perform_destroy(self, instance):
-        if instance.bookings.exists():
+        from bookings.models import Booking 
+        if Booking.objects.filter(ticket_type__event=instance).exists():
             raise DRFValidationError('Cannot delete an event that has bookings.')
         instance.delete()
         
@@ -97,7 +98,7 @@ class EventViewSet(PaginatedActionMixin, viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    
+
 
     @action(detail=False, methods=['get'], url_path='organizer/(?P<organizer_pk>[^/.]+)')
     def organizer_events(self, request, organizer_pk=None):

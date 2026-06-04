@@ -13,7 +13,7 @@ class EventUpdatePublishedSerializer(serializers.ModelSerializer):
         fields = ['description']
 
     def validate(self, attrs):
-        invalid_fields = set(self.initial_data.keys()) - {'description'} # type: ignore
+        invalid_fields = set(self.initial_data.keys()) - {'description'} 
         if invalid_fields:
             raise serializers.ValidationError(
                 f'Only description can be updated when event is published. Invalid fields: {invalid_fields}'
