@@ -12,6 +12,12 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         model  = User
         fields = ['name', 'email', 'phone_number', 'password', 'password2']
 
+    def validate_email(self, value):
+        normalized_email = value.strip().lower()
+        if User.objects.filter(email__iexact=normalized_email).exists():
+            raise serializers.ValidationError("User with this Email already exists.")
+        return value
+    
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({'password': 'Passwords do not match.'})
@@ -46,12 +52,6 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError({'new_password': 'Passwords do not match.'})
         return attrs
 
-
-class AdminUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model        = User
-        fields       = ['id', 'name', 'email', 'phone_number', 'is_active', 'date_joined']
-        read_only_fields = fields
 
 
 

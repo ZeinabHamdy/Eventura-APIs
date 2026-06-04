@@ -3,13 +3,12 @@ from rest_framework.permissions import AllowAny
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from .views import AuthViewSet, UserViewSet, AdminViewSet
+from .views import AuthViewSet, UserViewSet
 from .serializers import CustomTokenObtainPairSerializer
 
 router = DefaultRouter()
 router.register('auth', AuthViewSet, basename='auth')
 router.register('users', UserViewSet, basename='users')
-router.register('admin', AdminViewSet, basename='admin')
 
 
 

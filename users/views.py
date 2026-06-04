@@ -3,18 +3,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.filters import SearchFilter
-from django_filters.rest_framework import DjangoFilterBackend
 
-
-from .models import User
-from .permissions import IsAdminUser
-from utils.mixins import PaginatedActionMixin
 from .serializers import (
     UserRegisterSerializer,
     UserProfileSerializer,
     ChangePasswordSerializer,
-    AdminUserSerializer,
 )
 
 
@@ -33,8 +26,9 @@ class AuthViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def logout(self, request):
         try:
-            token = RefreshToken(request.data['refresh']) # take refresh token from request
-            token.blacklist()
+            refresh_token_str = request.data.get('refresh') 
+            token = RefreshToken(refresh_token_str)          
+            token.blacklist()                               
             return Response({'message': 'Logged out successfully.'})
         except Exception:
             return Response(
@@ -78,22 +72,10 @@ class UserViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['delete'], url_path='delete-account')
     def delete_account(self, request):
-        request.user.delete()
+        user = request.user
+        user.is_active = False # Soft delete 
+        user.save()
         return Response(
             {'message': 'Account deleted successfully.'},
             status=status.HTTP_204_NO_CONTENT
         )
-
-
-class AdminViewSet(PaginatedActionMixin, viewsets.GenericViewSet):
-    permission_classes = [IsAuthenticated, IsAdminUser]
-    filter_backends    = [DjangoFilterBackend, SearchFilter]
-    filterset_fields   = ['is_superuser', 'is_active']
-    search_fields      = ['name', 'email']
-    serializer_class   = AdminUserSerializer
-
-    @action(detail=False, methods=['get'])
-    def users(self, request):
-        queryset = User.objects.all()
-        queryset = self.filter_queryset(queryset)
-        return self.paginated_response(queryset, AdminUserSerializer)

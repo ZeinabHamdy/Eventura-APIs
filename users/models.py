@@ -17,7 +17,7 @@ class User(AbstractUser):
     USERNAME_FIELD  = 'email'
     REQUIRED_FIELDS = []
 
-    objects = UserManager() # type: ignore
+    objects: UserManager = UserManager()
 
     def save(self, *args, **kwargs):
         self.email = self.email.lower()  
