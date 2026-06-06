@@ -3,10 +3,8 @@ from events.models.event import Event
 from events.validators.ticket_type_validators import(
     validate_price,
     validate_seats,
-    validate_event_published,
-    validate_unique_ticket_type_per_event
+    validate_event_published_when_create_ticket_type,
 )
-from django.core.exceptions import ValidationError
 
 class TicketType(models.Model):
 
@@ -24,11 +22,19 @@ class TicketType(models.Model):
     created_at      = models.DateTimeField(auto_now_add=True)
     updated_at      = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['event', 'name'], 
+                name='unique_ticket_type_per_event'
+            )
+        ]
+        ordering = ['-created_at']
+
     def clean(self):
         validate_seats(self.total_seats, self.available_seats)
         validate_price(self.name, self.price)
-        validate_event_published(self.event)
-        validate_unique_ticket_type_per_event(self.event, self.name, self.pk)
+        validate_event_published_when_create_ticket_type(self.event)
 
     def save(self, *args, **kwargs):
         self.full_clean()

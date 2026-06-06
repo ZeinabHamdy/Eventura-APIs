@@ -19,7 +19,7 @@ class EventSerializersTestCase(TestCase):
             name="Django Workshop",
             description="Learn DRF",
             location_type="online",
-            location_link="https://zoom/mettinglink/",
+            location_link="https://www.eventura.com",
             start_date=timezone.now() + timedelta(days=1),
             end_date=timezone.now() + timedelta(days=2),
             status="published",

@@ -35,6 +35,6 @@ class TicketTypeUpdateWithBookingSerializer(serializers.ModelSerializer):
         invalid_fields = set(self.initial_data.keys()) - {'total_seats'} # type: ignore
         if invalid_fields:
             raise serializers.ValidationError(
-                f'Only total_seats can be updated when event is published. Invalid fields: {invalid_fields}'
+                f'Only total_seats can be updated. Invalid fields: {invalid_fields}'
             )
         return attrs

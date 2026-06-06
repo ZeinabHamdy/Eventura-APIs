@@ -1,4 +1,5 @@
 from rest_framework.permissions import BasePermission
+from django.apps import apps
 
 
 class IsAdminUser(BasePermission):
@@ -6,7 +7,18 @@ class IsAdminUser(BasePermission):
         return request.user.is_authenticated and request.user.is_superuser
 
 
-class IsOrganizer(BasePermission): # for this event
+class IsOrganizer(BasePermission): 
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        if request.method == 'POST':
+            event_id = request.data.get('event')
+            if event_id:
+                Event = apps.get_model('events', 'Event') 
+                return Event.objects.filter(id=event_id, organizer=request.user).exists()
+            return False 
+        return True
+
     def has_object_permission(self, request, view, obj):
         if hasattr(obj, 'organizer'):
             return obj.organizer == request.user
