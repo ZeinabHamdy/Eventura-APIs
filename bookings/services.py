@@ -64,13 +64,16 @@ def cancel_booking(booking):
         ticket_type.save(update_fields=['available_seats'])
 
 
+
 def _promote_from_waitlist(entry, ticket_type):
     entry.is_active = False
     entry.save(update_fields=['is_active'])
-
-    Booking.objects.create(
+    if not Booking.objects.filter(
         user=entry.user,
         ticket_type=ticket_type,
-    )
-    ##### notification need here
-    
+        status=Booking.STATUS.CONFIRMED
+    ).exists():
+        Booking.objects.create(
+            user=entry.user,
+            ticket_type=ticket_type,
+        )
