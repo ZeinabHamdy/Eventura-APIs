@@ -25,7 +25,7 @@ class ReviewViewSet(PaginatedActionMixin, viewsets.ModelViewSet):
 
 
     def get_queryset(self):
-        return Review.objects.filter(user=self.request.user)
+        return Review.objects.select_related('user', 'event').filter(user=self.request.user) # N+1 problem solved
     
     def get_serializer_class(self):
         if self.action == 'create':
@@ -47,6 +47,6 @@ class ReviewViewSet(PaginatedActionMixin, viewsets.ModelViewSet):
             event = Event.objects.get(pk=event_pk)
         except Event.DoesNotExist:
             return Response({'detail': 'Event not found.'}, status=status.HTTP_404_NOT_FOUND)
-        reviews = Review.objects.filter(event=event)
+        reviews = Review.objects.select_related('user', 'event').filter(event=event) # N+1 problem solved
         reviews = self.filter_queryset(reviews)
         return self.paginated_response(reviews, ListReviewSerializer)

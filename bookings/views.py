@@ -24,7 +24,7 @@ class BookingViewSet(PaginatedActionMixin, mixins.CreateModelMixin, mixins.ListM
 
     def get_queryset(self):
         user = self.request.user
-        qs = Booking.objects.all()
+        qs = Booking.objects.select_related('ticket_type__event') # N+1 problem solved
         return qs if user.is_superuser else qs.filter(user=user)
 
     def get_serializer_class(self):
@@ -74,8 +74,8 @@ class BookingViewSet(PaginatedActionMixin, mixins.CreateModelMixin, mixins.ListM
                 {'detail': 'Not authorized.'},
                 status=status.HTTP_403_FORBIDDEN
             )
-
-        bookings = Booking.objects.filter(
+        # N+1 problem solved here
+        bookings = Booking.objects.select_related('ticket_type__event').filter(
             ticket_type__event=event,
             status=Booking.STATUS.CONFIRMED
         )
@@ -111,7 +111,7 @@ class WaitlistViewSet(PaginatedActionMixin,mixins.ListModelMixin, mixins.Destroy
 
     def get_queryset(self):
         user = self.request.user
-        qs = WaitlistEntry.objects.filter(is_active=True)
+        qs = WaitlistEntry.objects.select_related('ticket_type__event').filter(is_active=True) # N+1 problem solved
         return qs if user.is_superuser else qs.filter(user=user)
 
     def perform_destroy(self, instance):
@@ -136,8 +136,8 @@ class WaitlistViewSet(PaginatedActionMixin,mixins.ListModelMixin, mixins.Destroy
                 {'detail': 'Not authorized.'},
                 status=status.HTTP_403_FORBIDDEN
             )
-
-        waitlist = WaitlistEntry.objects.filter(
+        # N+1 problem solved
+        waitlist = WaitlistEntry.objects.select_related('ticket_type__event').filter(
             ticket_type__event=event,
             is_active=True
         ).order_by('position')

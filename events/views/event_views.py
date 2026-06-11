@@ -37,7 +37,7 @@ class EventViewSet(PaginatedActionMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Event.objects.annotate(
+        return Event.objects.select_related('organizer', 'category').annotate( # N+1 problem solved
             average_rating=Avg('reviews__rating'),
             review_count=Count('reviews')
         ).filter(
@@ -112,7 +112,7 @@ class EventViewSet(PaginatedActionMixin, viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        events = Event.objects.annotate(
+        events = Event.objects.select_related('category').annotate( # N+1 problem solved
             average_rating=Avg('reviews__rating'),
             review_count=Count('reviews')
         ).filter(
