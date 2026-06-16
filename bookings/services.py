@@ -1,6 +1,7 @@
 from django.db import transaction
-from bookings.models import Booking, WaitlistEntry
 
+from bookings.models import Booking, WaitlistEntry
+from notifications.models import Notification
 
 def _create_booking(user, ticket_type):
     ticket_type.available_seats -= 1
@@ -9,6 +10,11 @@ def _create_booking(user, ticket_type):
     booking = Booking.objects.create(
         user=user,
         ticket_type=ticket_type,
+    )
+    Notification.objects.create(
+        user=user,
+        message=f"You Booked Event with this ticket type Successfully '{ticket_type.event.name}' -> #{booking.id}.",
+        notification_type=Notification.NOTIFICATION_TYPES.BOOKING_CONFIRMED
     )
     return ('booking', booking)
 
@@ -26,7 +32,14 @@ def _join_waitlist(user, ticket_type):
         ticket_type=ticket_type,
         position=position,
     )
+    Notification.objects.create(
+        user=user,
+        message=f"You joined Waitlist for event with ticket type :'{ticket_type.event.name}' at position :({position}).",
+        notification_type=Notification.NOTIFICATION_TYPES.NEW_BOOKING
+    )
     return ('waitlist', entry)
+
+
 
 @transaction.atomic  # all or nothing
 def create_booking_or_join_waitlist(user, ticket_type):
@@ -49,6 +62,12 @@ def cancel_booking(booking):
 
     booking.status = Booking.STATUS.CANCELLED
     booking.save()
+
+    Notification.objects.create(
+        user=booking.user,
+        message=f"You cancelled the booking for event with ticket type : '{ticket_type.event.name}' successfully.",
+        notification_type=Notification.NOTIFICATION_TYPES.BOOKING_CANCELLED
+    )
 
 
     # get first person in waitlist
@@ -77,3 +96,9 @@ def _promote_from_waitlist(entry, ticket_type):
             user=entry.user,
             ticket_type=ticket_type,
         )
+
+        Notification.objects.create(
+                user=entry.user,
+                message=f"You promoted from waitlist and your booking is confirmed for event with ticket type: '{ticket_type.event.name}'.",
+                notification_type=Notification.NOTIFICATION_TYPES.WAIT_LIST_PROMOTED
+            )

@@ -11,6 +11,7 @@ class Notification(models.Model):
         NEW_BOOKING        = 'new_booking',        'New Booking'
         EVENT_CANCELLED    = 'event_cancelled',    'Event Cancelled'
         EVENT_REMINDER     = 'event_reminder',     'Event Reminder'
+        EVENT_STARTED      = 'event_started',      'Event Started'
 
     created_at        = models.DateTimeField(auto_now_add=True)
     message           = models.TextField()

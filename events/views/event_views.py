@@ -89,10 +89,15 @@ class EventViewSet(PaginatedActionMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=['patch'], url_path='status')
     def update_status(self, request, pk=None):
         event = self.get_object()
-        serializer = EventUpdateStatusSerializer(event, data=request.data,partial=True)
+        old_status = event.status 
+        serializer = EventUpdateStatusSerializer(event, data=request.data, partial=True)
         if serializer.is_valid():
             try:
-                serializer.save()
+                updated_event = serializer.save()
+                # celery::::::::::
+                if updated_event.status == 'cancelled' and old_status != 'cancelled':
+                    from events.tasks import send_event_cancelled_notifications
+                    send_event_cancelled_notifications.delay(updated_event.id)
             except DjangoValidationError as e:
                 raise DRFValidationError(e.message_dict)
             return Response(serializer.data)
