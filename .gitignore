@@ -9,3 +9,4 @@ __pycache__/
 pyrightconfig.json
 *.html
 *.txt
+Redis-x64-5.0.14.1/
