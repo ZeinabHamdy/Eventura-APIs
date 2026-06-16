@@ -51,3 +51,11 @@ class Event(models.Model):
         
     def __str__(self):
         return self.name
+
+    class Meta:
+        indexes = [ # fields : status, category, location_type, start, end
+            # no category -? as category is already foreign key
+            # no location_type -? as only online and offline
+            # no end_date -? not important
+            models.Index(fields=['status', '-start_date'], name='event_status_date_idx'),
+        ]

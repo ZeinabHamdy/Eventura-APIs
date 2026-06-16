@@ -30,6 +30,10 @@ class TicketType(models.Model):
             )
         ]
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['event', 'price'], name='ticket_event_price_idx'),
+            models.Index(fields=['available_seats'], name='ticket_avail_seats_idx'),
+        ]
 
     def clean(self):
         validate_seats(self.total_seats, self.available_seats)

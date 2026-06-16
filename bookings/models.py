@@ -21,6 +21,10 @@ class Booking(models.Model):
                 name='unique_confirmed_booking_per_user_per_ticket_type'
             )
         ]
+        indexes = [
+            models.Index(fields=['user', '-booked_at'], name='booking_user_date_idx'),
+            models.Index(fields=['ticket_type', 'status'], name='booking_ticket_status_idx'),
+        ]
 
     def clean(self):
         from bookings.validators import validate_booking_status_flow
@@ -52,6 +56,9 @@ class WaitlistEntry(models.Model):
             )
         ]
         ordering = ['position']
+        indexes = [
+            models.Index(fields=['ticket_type', 'is_active', 'position'], name='waitlist_core_idx'),
+        ]
 
     def __str__(self):
         return f'{self.user.email} → waitlist #{self.position} for {self.ticket_type.event.name}'
