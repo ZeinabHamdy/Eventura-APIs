@@ -18,5 +18,11 @@ class Notification(models.Model):
     user              = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     notification_type = models.CharField(max_length=25, choices=NOTIFICATION_TYPES.choices)
 
+    class Meta:
+        ordering = ['-created_at'] 
+        indexes = [
+            models.Index(fields=['user', '-created_at']),
+        ]
+
     def __str__(self):
-        return f'{self.notification_type} - {self.user.username}'
+        return f'{self.get_notification_type_display()} - {self.user.email}'
