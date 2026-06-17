@@ -61,7 +61,8 @@ Eventura is a high-performance RESTful API designed to manage event organization
 
 ## OpenAPI Specification & Interactive Docs
 
-The project includes an auto-generated API schema compliant with OpenAPI 3.0 specs available via drf-spectacular. 
+The project includes an auto-generated API schema compliant with OpenAPI 3.0 specs available via drf-spectacular.
+
 
 ![Endpoints](API%20docs%201.png)
 ![Endpoints](API%20docs%202.png)
@@ -70,74 +71,88 @@ The project includes an auto-generated API schema compliant with OpenAPI 3.0 spe
 ![Endpoints](API%20docs%205.png)
 
 
-Click on each section below to expand the documentation endpoints:
+
+Click on each section below to expand the documentation endpoints and tables:
 
 <details>
 <summary>1. Authentication & Security (auth)</summary>
 
-* POST /api/auth/register/ - Register account
-* POST /api/auth/login/ - Login & Obtain JWT (Custom lowercase mapping)
-* POST /api/auth/logout/ - Blacklist refresh token & clear session
-* POST /api/auth/token/refresh/ - Refresh Access Token
+### Authentication Endpoints
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| POST | `/api/auth/register/` | Register a new user account |
+| POST | `/api/auth/login/` | Login user & obtain access/refresh JWT tokens (Custom lowercase mapping) |
+| POST | `/api/auth/logout/` | Logout user & blacklist refresh token to terminate session |
+| POST | `/api/auth/token/refresh/` | Refresh access token using a valid refresh token |
 
 </details>
 
 <details>
 <summary>2. User Profiles Management (users)</summary>
 
-* GET /api/users/me/ - View current user profile
-* PATCH /api/users/me/ - Partial profile update management
-* POST /api/users/change-password/ - Secure password updating
-* DELETE /api/users/delete-account/ - Deactivates profile safely (Soft Delete)
+### User Profiles Endpoints
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| GET | `/api/users/me/` | View current authenticated user profile |
+| PATCH | `/api/users/me/` | Partial profile update management |
+| POST | `/api/users/change-password/` | Secure password updating |
+| DELETE | `/api/users/delete-account/` | Deactivates profile safely via Soft Delete |
 
 </details>
 
 <details>
-<summary>3. Events & Tickets (events & ticket-types & categories)</summary>
+<summary>3. Events, Tickets & Categories</summary>
 
-* GET /api/events/ - List all published/active events (Supports filtration, search & ordering)
-* POST /api/events/ - Create a new event (Drafted by default)
-* GET /api/events/{id}/ - Retrieve detailed event configurations
-* PUT /api/events/{id}/ - Full update parameters on an event
-* PATCH /api/events/{id}/ - Partial update on specific event fields
-* DELETE /api/events/{id}/ - Terminate/delete an event (Organizer/Admin only)
-* PATCH /api/events/{id}/status/ - Manage state changes (Drafted to Published to Cancelled)
-* GET /api/events/organizer/{organizer_pk}/ - Extract organizer-specific event scopes
-* GET /api/ticket-types/ - List available ticket variants and configurations
-* POST /api/ticket-types/ - Create seating capacities and pricing for an event
-* GET /api/ticket-types/{id}/ - View details of a specific ticket type
-* PUT /api/ticket-types/{id}/ - Full update configurations
-* PATCH /api/ticket-types/{id}/ - Partial update (Recalculates seats based on bookings)
-* DELETE /api/ticket-types/{id}/ - Remove a ticket type if it has no active bookings
-* GET /api/categories/ - List all event categories (Supports search filter)
-* POST /api/categories/ - Create a new category (Admin only)
-* GET /api/categories/{id}/ - Retrieve a specific category detail
-* DELETE /api/categories/{id}/ - Category deletion operation (Admin only)
+### Events, Ticket-Types & Categories Endpoints
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| GET | `/api/events/` | List all published/active events (Supports filtration, search & ordering) |
+| POST | `/api/events/` | Create a new event (Drafted by default) |
+| GET | `/api/events/{id}/` | Retrieve detailed event configurations |
+| PUT | `/api/events/{id}/` | Full update parameters on an event |
+| PATCH | `/api/events/{id}/` | Partial update on specific event fields |
+| DELETE | `/api/events/{id}/` | Terminate/delete an event (Organizer/Admin only) |
+| PATCH | `/api/events/{id}/status/` | Manage state changes (Drafted to Published to Cancelled) |
+| GET | `/api/events/organizer/{organizer_pk}/` | Extract organizer-specific event scopes |
+| GET | `/api/ticket-types/` | List available ticket variants and configurations |
+| POST | `/api/ticket-types/` | Create seating capacities and pricing for an event |
+| GET | `/api/ticket-types/{id}/` | View details of a specific ticket type |
+| PUT | `/api/ticket-types/{id}/` | Full update configurations |
+| PATCH | `/api/ticket-types/{id}/` | Partial update (Recalculates seats based on bookings) |
+| DELETE | `/api/ticket-types/{id}/` | Remove a ticket type if it has no active bookings |
+| GET | `/api/categories/` | List all event categories (Supports search filter) |
+| POST | `/api/categories/` | Create a new category (Admin only) |
+| GET | `/api/categories/{id}/` | Retrieve a specific category detail |
+| DELETE | `/api/categories/{id}/` | Category deletion operation (Admin only) |
+
 
 </details>
 
 <details>
 <summary>4. Core System (bookings, waitlist, reviews & notifications)</summary>
 
-* GET /api/bookings/ - List confirmed bookings for the logged-in user
-* POST /api/bookings/ - Ticket booking (Returns 201 Confirmed or 202 Waitlisted)
-* GET /api/bookings/{id}/ - View ticket booking receipt details
-* POST /api/bookings/{id}/cancel/ - Cancel booking (Triggers atomic waitlist promotion)
-* GET /api/bookings/event/{event_pk}/ - Extract all bookings assigned to an event (Organizer only)
-* GET /api/waitlist/ - Track user's active waitlist queues and current positions
-* DELETE /api/waitlist/{id}/ - Leave a waitlist queue manually (Soft Delete)
-* GET /api/waitlist/event/{event_pk}/ - Inspect the full waitlist queue for an event (Organizer only)
-* GET /api/reviews/ - View user's own compiled reviews
-* POST /api/reviews/ - Conditional user reviews (Post-event completion & attendance checks)
-* GET /api/reviews/{id}/ - Fetch single review details
-* PATCH /api/reviews/{id}/ - Update review rating score or comments
-* DELETE /api/reviews/{id}/ - Remove an event review
-* GET /api/reviews/event/{event_pk}/ - Pull all historical user reviews for a specific event
-* GET /api/notifications/ - Live feed of user notifications ordered by newest
-* GET /api/notifications/{id}/ - View a single notification body
-* DELETE /api/notifications/{id}/ - Dismiss/delete an alert notification
-* PATCH /api/notifications/{id}/read/ - Mark a single notification alert as read
-* PATCH /api/notifications/read_all/ - Bulk mark all user notifications as read
+### Bookings, Waitlists, Reviews & Notifications Endpoints
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| GET | `/api/bookings/` | List confirmed bookings for the logged-in user |
+| POST | `/api/bookings/` | Ticket booking (Returns 201 Confirmed or 202 Waitlisted) |
+| GET | `/api/bookings/{id}/` | View ticket booking receipt details |
+| POST | `/api/bookings/{id}/cancel/` | Cancel booking (Triggers atomic waitlist promotion) |
+| GET | `/api/bookings/event/{event_pk}/` | Extract all bookings assigned to an event (Organizer only) |
+| GET | `/api/waitlist/` | Track user's active waitlist queues and current positions |
+| DELETE | `/api/waitlist/{id}/` | Leave a waitlist queue manually (Soft Delete) |
+| GET | `/api/waitlist/event/{event_pk}/` | Inspect the full waitlist queue for an event (Organizer only) |
+| GET | `/api/reviews/` | View user's own compiled reviews |
+| POST | `/api/reviews/` | Conditional user reviews (Post-event completion & attendance checks) |
+| GET | `/api/reviews/{id}/` | Fetch single review details |
+| PATCH | `/api/reviews/{id}/` | Update review rating score or comments |
+| DELETE | `/api/reviews/{id}/` | Remove an event review |
+| GET | `/api/reviews/event/{event_pk}/` | Pull all historical user reviews for a specific event |
+| GET | `/api/notifications/` | Live feed of user notifications ordered by newest |
+| GET | `/api/notifications/{id}/` | View a single notification body |
+| DELETE | `/api/notifications/{id}/` | Dismiss/delete an alert notification |
+| PATCH | `/api/notifications/{id}/read/` | Mark a single notification alert as read |
+| PATCH | `/api/notifications/read_all/` | Bulk mark all user notifications as read |
 
 </details>
 
@@ -158,7 +173,6 @@ eventura/
 ├── users/                # User Models, Custom UserManager, and Profile validations
 ├── events/               # Event, Category & TicketType models, and Status Flow logic
 ├── bookings/             # Isolated Services layer, Concurrency control, and Queue promotion
-├── reviews/               # Event ratings restricted by confirmed booking histories
-├── notifications/         # User Notification histories automated via Celery Tasks
-└── utils/                 # Shareable codebase mixins (e.g., PaginatedActionMixin)
-```
+├── reviews/              # Event ratings restricted by confirmed booking histories
+├── notifications/        # User Notification histories automated via Celery Tasks
+└── utils/                # Shareable codebase mixins (e.g., PaginatedActionMixin)
