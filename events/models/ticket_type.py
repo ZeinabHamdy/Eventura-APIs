@@ -36,11 +36,17 @@ class TicketType(models.Model):
         ]
 
     def clean(self):
+        if self.available_seats is None:
+            self.available_seats = self.total_seats
+        super().clean()
         validate_seats(self.total_seats, self.available_seats)
         validate_price(self.name, self.price)
         validate_event_published_when_create_ticket_type(self.event)
 
+
     def save(self, *args, **kwargs):
+        if self.available_seats is None:
+            self.available_seats = self.total_seats
         self.full_clean()
         super().save(*args, **kwargs)
 

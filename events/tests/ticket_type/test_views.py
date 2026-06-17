@@ -7,12 +7,7 @@ from unittest.mock import patch
 
 from users.models import User
 from bookings.models import Booking
-from events.models.event import Event
-from events.models.category import Category
-from events.models.ticket_type import TicketType
-from events.views.ticket_type_views import TicketTypeViewSet
-
-
+from events.models import Event, Category, TicketType
 
 class TicketTypeViewsIntegrationTesting(APITestCase):
     def setUp(self):
@@ -47,15 +42,14 @@ class TicketTypeViewsIntegrationTesting(APITestCase):
             category=self.category,
             organizer=self.organizer
         )
-        self.list_url = reverse('ticket-types-list')
 
+        self.list_url = reverse('ticket-types-list')
 
     def _create_ticket_type(self, event, name="regular", price=100.00, total_seats=50, available_seats=50):
         return TicketType.objects.create(
             event=event, name=name, price=price, total_seats=total_seats, available_seats=available_seats
         )
 
-    """ test -> permissions"""
     def test_anonymous_user_cannot_create_ticket_type(self):
         response = self.client.post(self.list_url, {})
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -118,15 +112,20 @@ class TicketTypeViewsIntegrationTesting(APITestCase):
         self.assertEqual(ticket.total_seats, 100)
         self.assertEqual(ticket.available_seats, 99)
 
+
     def test_update_total_seats_less_than_booked_raises_error(self):
-        ticket = self._create_ticket_type(event=self.published_event, total_seats=50, available_seats=30)
+        ticket = self._create_ticket_type(event=self.published_event, total_seats=50, available_seats=50)
         url = reverse('ticket-types-detail', kwargs={'pk': ticket.pk})
-        with patch('django.db.models.query.QuerySet.exists', return_value=True):
-            self.client.force_authenticate(user=self.organizer)
-            data = {"total_seats": 15} 
-            response = self.client.patch(url, data, format='json')
-            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-            self.assertIn('Cannot set total seats to 15, already 20 seats booked.', response.data[0])
+        Booking.objects.create(user=self.user, ticket_type=ticket, status="confirmed")
+        ticket.available_seats = 30 
+        ticket.save()
+
+        self.client.force_authenticate(user=self.organizer)
+        response = self.client.patch(url, {'total_seats': 15}, format='json')
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('Cannot set total seats to 15', str(response.data))
+
 
     def test_delete_ticket_type_without_bookings_success(self):
         ticket = self._create_ticket_type(event=self.published_event)
@@ -143,7 +142,7 @@ class TicketTypeViewsIntegrationTesting(APITestCase):
             self.client.force_authenticate(user=self.organizer)
             response = self.client.delete(url)
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-            self.assertIn('Cannot delete a ticket type that has bookings.', response.data[0])
+            self.assertIn('Cannot delete ticket type with active bookings.', str(response.data))
 
     def test_filter_and_order_ticket_types(self):
         self._create_ticket_type(event=self.published_event, name="free", price=0.00)

@@ -81,7 +81,7 @@ def send_event_reminder_24h_task():
             notifications_to_create.append(
                 Notification(
                     user_id=user_id,
-                    message=f"Reminder! the event '{event.name}' will start after 24 hours !",
+                    message="Reminder: Your event starts in 24 hours",
                     notification_type=Notification.NOTIFICATION_TYPES.EVENT_REMINDER
                 )
             )

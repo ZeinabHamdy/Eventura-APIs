@@ -1,4 +1,5 @@
-from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework import status, viewsets
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from django_filters.rest_framework import DjangoFilterBackend
@@ -21,7 +22,7 @@ from events.serializers.ticket_type_serializer import(
 class TicketTypeViewSet(viewsets.ModelViewSet):
     queryset = TicketType.objects.select_related('event').annotate( # N+1 problem solved
         bookings_count=Count('bookings')
-    ).all()
+    ).all().order_by('id')
     filter_backends  = [DjangoFilterBackend, OrderingFilter]
     filterset_class  = TicketTypeFilter
     ordering_fields  = ['price', 'available_seats']
@@ -55,3 +56,21 @@ class TicketTypeViewSet(viewsets.ModelViewSet):
         if instance.bookings_count > 0: 
             raise DRFValidationError('Cannot delete a ticket type that has bookings.')
         instance.delete()
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.bookings.exists(): 
+            return Response(
+                {"detail": "Cannot delete ticket type with active bookings."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return super().destroy(request, *args, **kwargs)
+    
+    def create(self, request, *args, **kwargs):
+        event_id = request.data.get('event')
+        if event_id:
+            from events.models import Event
+            event = Event.objects.get(pk=event_id)
+            if event.organizer != request.user:
+                return Response({"detail": "You are not the organizer."}, status=status.HTTP_403_FORBIDDEN)
+        return super().create(request, *args, **kwargs)
