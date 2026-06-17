@@ -157,6 +157,10 @@ SPECTACULAR_SETTINGS = {
         "deepLinking": True,
         "persistAuthorization": True,  
     },
+    'SWAGGER_UI_SETTINGS': {
+        'tagsSorter': 'alpha', 
+        'operationsSorter': 'alpha', 
+    },
 }
 
 

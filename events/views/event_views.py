@@ -24,7 +24,8 @@ from events.serializers.event_serializer import (
     EventWriteSerializer,
 )
 
-
+from drf_spectacular.utils import extend_schema
+@extend_schema(tags=['4. Events'])
 class EventViewSet(PaginatedActionMixin, viewsets.ModelViewSet):
     queryset = Event.objects.all()
     permission_classes = [IsAuthenticated]

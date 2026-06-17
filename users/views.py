@@ -11,6 +11,8 @@ from .serializers import (
 )
 
 
+from drf_spectacular.utils import extend_schema
+@extend_schema(tags=['1. Auth'])
 class AuthViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
@@ -38,7 +40,7 @@ class AuthViewSet(viewsets.ViewSet):
 
 
 
-
+@extend_schema(tags=['2. Users'])
 class UserViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 

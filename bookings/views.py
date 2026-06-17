@@ -14,7 +14,8 @@ from users.permissions import IsOwnerOrAdmin
 from utils.mixins import PaginatedActionMixin
 
 
-
+from drf_spectacular.utils import extend_schema
+@extend_schema(tags=['6. Bookings'])
 class BookingViewSet(PaginatedActionMixin, mixins.CreateModelMixin, mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends  = [DjangoFilterBackend, OrderingFilter]
@@ -104,7 +105,7 @@ class BookingViewSet(PaginatedActionMixin, mixins.CreateModelMixin, mixins.ListM
 
 
 
-
+@extend_schema(tags=['7. Wait-list'])
 class WaitlistViewSet(PaginatedActionMixin,mixins.ListModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = WaitlistReadSerializer

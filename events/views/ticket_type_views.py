@@ -18,7 +18,8 @@ from events.serializers.ticket_type_serializer import(
 )
 
 
-
+from drf_spectacular.utils import extend_schema
+@extend_schema(tags=['5. Ticket Types'])
 class TicketTypeViewSet(viewsets.ModelViewSet):
     queryset = TicketType.objects.select_related('event').annotate( # N+1 problem solved
         bookings_count=Count('bookings')

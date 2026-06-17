@@ -7,6 +7,9 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Notification
 from .serializers import NotificationSerializer
 
+
+from drf_spectacular.utils import extend_schema
+@extend_schema(tags=['9. Notifications'])
 class NotificationViewSet(mixins.ListModelMixin,
                         mixins.RetrieveModelMixin,
                         mixins.DestroyModelMixin,

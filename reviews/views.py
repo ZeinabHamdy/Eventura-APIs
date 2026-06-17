@@ -15,7 +15,8 @@ from reviews.serializers import(
 from reviews.models import Review
 from utils.mixins import PaginatedActionMixin
 
-
+from drf_spectacular.utils import extend_schema
+@extend_schema(tags=['8. Reviews'])
 class ReviewViewSet(PaginatedActionMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
