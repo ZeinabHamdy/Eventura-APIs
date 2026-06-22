@@ -56,9 +56,11 @@ class WaitlistEntry(models.Model):
             )
         ]
         ordering = ['position']
-        indexes = [
-            models.Index(fields=['ticket_type', 'is_active', 'position'], name='waitlist_core_idx'),
-        ]
+        models.Index(
+            fields=['ticket_type', 'position'], 
+            name='waitlist_core_partial_idx',
+            condition=models.Q(is_active=True)  
+        )
 
     def __str__(self):
         return f'{self.user.email} → waitlist #{self.position} for {self.ticket_type.event.name}'
