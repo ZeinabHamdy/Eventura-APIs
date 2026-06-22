@@ -64,7 +64,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'src.wsgi.application'
 
-DATABASES = {
+""" DATABASES = {
     'default': {
         'ENGINE': config('DB_ENGINE'),
         'NAME': config('DB_NAME'),
@@ -73,6 +73,17 @@ DATABASES = {
         'HOST': config('DB_HOST'),
         'PORT': config('DB_PORT'),
     }
+} """
+
+import dj_database_url
+import os
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600,
+        ssl_require=True
+    )
 }
 
 
